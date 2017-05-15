@@ -5,5 +5,5 @@ package InteractionDesign.Group3;
  * forecast.
  */
 public enum Item {
-	HAT, COAT, SUNGLASSES, HIVIS_JACKET, SEAT_COVER;
+	BAG_COVER, COAT, GLOVES, HELMET, LIGHT, SEAT_COVER, SUNGLASSES;
 }
