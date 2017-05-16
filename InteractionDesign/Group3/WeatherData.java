@@ -8,15 +8,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
+
+// TODO - suggested locations (search suggestions)
 
 /**
  * A cache of the most recently loaded weather data.
@@ -32,7 +35,7 @@ public class WeatherData {
 	private LocalDateTime mLastUpdated;
 	private String mLocation;
 
-	private Map<DayOfWeek, List<Record>> mThisWeek;
+	private Map<LocalDate, List<Record>> mThisWeek;
 	private List<Record> mToday;
 	private List<Warning> mWarnings;
 
@@ -92,21 +95,21 @@ public class WeatherData {
 	}
 
 	/**
-	 * Gets the weekly forecast. This is a map of week day to forecast.
-	 * To get the correct order, this should be compared to the current day of
-	 * the week.
+	 * Gets the weekly forecast. This is a map of date to forecast.
+	 * The Map is ordered by date, and each list is ordered by time.
 	 *
 	 * @return			the forecast for each day of the week
 	 */
-	public Map<DayOfWeek, List<Record>> getThisWeek() {
+	public Map<LocalDate, List<Record>> getThisWeek() {
 		return mThisWeek;
 	}
 
 	/**
 	 * Gets the forecast for today. Each record gives weather data for a
 	 * particular time, as well as a time stamp.
+	 * The list is ordered.
 	 * Watch out for daily forecast not referring to today, if the cache is out
-	 * of date (check time stamps)
+	 * of date (check time stamps).
 	 *
 	 * @return			daily weather forecast
 	 */
@@ -144,15 +147,15 @@ public class WeatherData {
 
 			// Load weekly forecast
 
-			mThisWeek = new HashMap<>();
+			mThisWeek = new TreeMap<>();
 
 			List<Record> list = new ArrayList<>();
 
 			while (! (line = br.readLine()).equals("")) {
 				if (line.startsWith("day")) {
-					DayOfWeek day = DayOfWeek.valueOf(line.split(":")[1]);
+					LocalDate date = LocalDate.parse(line.split(":")[1]);
 					list = new ArrayList<>();
-					mThisWeek.put(day, list);
+					mThisWeek.put(date, list);
 
 				} else {
 					list.add(new Record(line));
@@ -210,6 +213,8 @@ public class WeatherData {
 		// Don't overwrite previous values before API call has succeeded
 			// - old data > no data
 
+		// Ensure that mToday and mThisWeek are sorted chronologically
+
 		// Doesn't return any value
 			// Exception thrown if it fails (hopefully with a message)
 			// Data can be fetched with getters
@@ -236,7 +241,7 @@ public class WeatherData {
 
 			// Save weekly forecast
 
-			for (Entry<DayOfWeek, List<Record>> entry : mThisWeek.entrySet()) {
+			for (Entry<LocalDate, List<Record>> entry : mThisWeek.entrySet()) {
 				bw.write(entry.getKey().toString());
 				bw.newLine();
 
