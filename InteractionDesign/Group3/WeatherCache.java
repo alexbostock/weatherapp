@@ -28,8 +28,8 @@ import java.util.TreeMap;
  * This is a singleton. When instantiated, the cache is loaded from disk if a
  * cache file already exists.
  */
-public class WeatherData {
-	private static WeatherData theObj;
+public class WeatherCache {
+	private static WeatherCache theObj;
 
 	private final String mCacheFile;
 	private LocalDateTime mLastUpdated;
@@ -46,14 +46,14 @@ public class WeatherData {
 	 * @throws	CacheException	if the cache file fails to load (which may be
 	 *							because the cache file does not yet exist)
 	 */
-	public static WeatherData getWeatherDataObj() throws CacheException {
+	public static WeatherCache getWeatherDataObj() throws CacheException {
 		if (theObj == null)
-			theObj = new WeatherData();
+			theObj = new WeatherCache();
 
 		return theObj;
 	}
 
-	private WeatherData() throws CacheException {
+	private WeatherCache() throws CacheException {
 		// Default values
 
 		mCacheFile = "weatherCache.csv";

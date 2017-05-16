@@ -2,8 +2,6 @@ package InteractionDesign.Group3;
 
 import java.time.LocalDateTime;
 
-// TODO - make comparable - Collections.sort(List<Record>)
-
 /**
  * Represents the weather forecast at a particular time.
  * Stores the temperature, weather icon, and a time stamp.
