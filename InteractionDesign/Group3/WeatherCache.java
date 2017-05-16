@@ -7,17 +7,18 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 
 // TODO - suggested locations (search suggestions)
 
@@ -31,13 +32,21 @@ import java.util.TreeMap;
 public class WeatherCache {
 	private static WeatherCache theObj;
 
+	private APIClient mGordon;
+
 	private final String mCacheFile;
 	private LocalDateTime mLastUpdated;
 	private String mLocation;
 
-	private Map<LocalDate, List<Record>> mThisWeek;
+	private Record mSummary;
+	private List<List<Record>> mThisWeek;
 	private List<Record> mToday;
 	private List<Warning> mWarnings;
+
+	private LocalDateTime mSunrise;
+	private LocalDateTime mSunset;
+
+	private Map<WeatherData.ConditionCode, Icon> mIconMap;
 
 	/**
 	 * Returns the singleton instance of WeatherData.
@@ -46,20 +55,27 @@ public class WeatherCache {
 	 * @throws	CacheException	if the cache file fails to load (which may be
 	 *							because the cache file does not yet exist)
 	 */
-	public static WeatherCache getWeatherDataObj() throws CacheException {
+	public static WeatherCache getWeatherDataObj() throws APIException, CacheException {
 		if (theObj == null)
 			theObj = new WeatherCache();
 
 		return theObj;
 	}
 
-	private WeatherCache() throws CacheException {
+	private WeatherCache() throws APIException, CacheException {
+		mGordon = new APIClient();
+
+		makeIconMap();
+
 		// Default values
 
 		mCacheFile = "weatherCache.csv";
 		mLocation = "Cambridge";
 
 		loadFromDisk();
+
+		if (! isFresh())
+			refresh();
 	}
 
 	/**
@@ -70,10 +86,62 @@ public class WeatherCache {
 	 * @param	fin		the second time stamp
 	 * @return			a list of Items
 	 */
-	public List<Item> getItems(LocalTime start, LocalTime fin) {
+	public List<Item> getItems(LocalTime start, LocalTime fin) throws APIException, CacheException {
+		if (! isFresh())
+			refresh();
+
+		if (mToday == null)
+			throw new CacheException("Recommending items failed");
+
+		boolean rain = false;
+		boolean cold = false;
+		boolean sunny = false;
+		boolean heavyRain = false;
+		boolean snow = false;
+
+		for (Record r : mToday) {
+			LocalTime t = r.getTimeStamp().toLocalTime();
+
+			if (t.compareTo(start) > 0 || t.compareTo(fin.plusHours(1)) < 0) {
+				Icon i = r.getIcon();
+
+				heavyRain = heavyRain || (i == Icon.HEAVY_RAIN || i == Icon.HAIL || i == Icon.THUNDERSTORM);
+
+				snow = snow || (i == Icon.HEAVY_SNOW || i == Icon.LIGHT_SNOW || i == Icon.SNOWFLAKE);
+
+				rain = rain || (i == Icon.LIGHT_RAIN);
+
+				sunny = sunny || (i == Icon.SUN);
+
+				cold = cold || (r.getTemp() < 10);
+			}
+		}
+
+		rain = rain || heavyRain || snow;
+
+		boolean dark = (start.compareTo(mSunrise.toLocalTime()) < 0 || fin.plusHours(1).compareTo(mSunset.toLocalTime()) > 0);
+
 		List<Item> result = new ArrayList<>();
 
-		// Function of times and daily forecast - TODO
+		if (dark)
+			result.add(Item.LIGHTS);
+
+		if (rain || cold)
+			result.add(Item.COAT);
+
+		if (cold)
+			result.add(Item.GLOVES);
+
+		if (rain)
+			result.add(Item.SEAT_COVER);
+
+		if (sunny)
+			result.add(Item.SUNGLASSES);
+
+		if (heavyRain || snow)
+			result.add(Item.BAG_COVER);
+
+		result.add(Item.HELMET);
 
 		return result;
 	}
@@ -102,7 +170,10 @@ public class WeatherCache {
 	 *
 	 * @return			the forecast for each day of the week
 	 */
-	public Map<LocalDate, List<Record>> getThisWeek() {
+	public List<List<Record>> getThisWeek() throws APIException, CacheException {
+		if (! isFresh())
+			refresh();
+
 		return mThisWeek;
 	}
 
@@ -115,7 +186,10 @@ public class WeatherCache {
 	 *
 	 * @return			daily weather forecast
 	 */
-	public List<Record> getToday() {
+	public List<Record> getToday() throws APIException, CacheException {
+		if (! isFresh())
+			refresh();
+
 		return mToday;
 	}
 
@@ -124,8 +198,17 @@ public class WeatherCache {
 	 *
 	 * @return			list of warnings
 	 */
-	public List<Warning> getWarnings() {
+	public List<Warning> getWarnings() throws APIException, CacheException {
+		if (! isFresh())
+			refresh();
+
 		return mWarnings;
+	}
+
+	private boolean isFresh() {
+		int comp = LocalDateTime.now().compareTo(mLastUpdated.plusHours(1));
+
+		return comp < 0;
 	}
 
 	private void loadFromDisk() throws CacheException {
@@ -145,32 +228,40 @@ public class WeatherCache {
 			line = br.readLine();
 			mLocation = line;
 
+			// Load sunrise & sunset
+
+			line = br.readLine();
+			mSunrise = LocalDateTime.parse(line);
+
+			line = br.readLine();
+			mSunset = LocalDateTime.parse(line);
+
 			br.readLine();	// Should be a blank line
 
 			// Load weekly forecast
 
-			mThisWeek = new TreeMap<>();
+			mThisWeek = new ArrayList<>();
 
 			List<Record> list = new ArrayList<>();
 
 			while (! (line = br.readLine()).equals("")) {
-				if (line.startsWith("day")) {
-					LocalDate date = LocalDate.parse(line.split(":")[1]);
+				if (line.equals("___")) {
 					list = new ArrayList<>();
-					mThisWeek.put(date, list);
+					mThisWeek.add(list);
 
 				} else {
 					list.add(new Record(line));
 				}
 			}
 
-			// Load daily forecast (not necessarily today's !)
+			mToday = mThisWeek.get(0);
 
-			mToday = new ArrayList<>();
+			// Load daily summary
 
-			while (! (line = br.readLine()).equals("")) {
-				mToday.add(new Record(line));
-			}
+			line = br.readLine();
+			mSummary = new Record(line);
+
+			br.readLine();
 
 			// Load weather warnings
 
@@ -180,15 +271,86 @@ public class WeatherCache {
 				mWarnings.add(Warning.valueOf(line));
 			}
 
-			// TODO - check whether the cached daily forecast saved is today's
-				// (Low priority - should be fine for the tick)
-
 		} catch (DateTimeParseException e) {
 			throw new CacheException("Invalid cache file");
 
 		} catch (IOException e) {
 			throw new CacheException("Failed to load cache file");
 		}
+	}
+
+	private void makeIconMap() {
+		mIconMap = new HashMap<>();
+
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_LIGHT_RAIN, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_RAIN, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_HEAVY_RAIN, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_THUNDERSTORM, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_THUNDERSTORM, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.RAGGED_THUNDERSTORM, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_LIGHT_DRIZZLE, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_DRIZZLE, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.THUNDERSTORM_WITH_HEAVY_DRIZZLE, Icon.THUNDERSTORM);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_INTENSITY_DRIZZLE, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.DRIZZLE, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_INTENSITY_DRIZZLE, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_INTENSITY_DRIZZLE_RAIN, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.DRIZZLE_RAIN, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_INTENSITY_DRIZZLE_RAIN, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.SHOWER_DRIZZLE, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_RAIN, Icon.LIGHT_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.MODERATE_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_INTENSITY_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.VERY_HEAVY_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.EXTREME_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.FREEZING_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_INTENSITY_SHOWER_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.SHOWER_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_INTENSITY_SHOWER_RAIN, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.LIGHT_SNOW, Icon.LIGHT_SNOW);
+		mIconMap.put(WeatherData.ConditionCode.SNOW, Icon.HEAVY_SNOW);
+		mIconMap.put(WeatherData.ConditionCode.HEAVY_SNOW, Icon.HEAVY_SNOW);
+		mIconMap.put(WeatherData.ConditionCode.SLEET, Icon.HAIL);
+		mIconMap.put(WeatherData.ConditionCode.SHOWER_SNOW, Icon.HEAVY_SNOW);
+		mIconMap.put(WeatherData.ConditionCode.MIST, Icon.MIST_DAY);
+		mIconMap.put(WeatherData.ConditionCode.SMOKE, Icon.MIST_DAY);
+		mIconMap.put(WeatherData.ConditionCode.HAZE, Icon.MIST_DAY);
+		mIconMap.put(WeatherData.ConditionCode.SAND_OR_DUST_WHIRLS, Icon.MIST_DAY);
+		mIconMap.put(WeatherData.ConditionCode.FOG, Icon.MIST_DAY);
+		mIconMap.put(WeatherData.ConditionCode.SKY_IS_CLEAR, Icon.SUN);
+		mIconMap.put(WeatherData.ConditionCode.FEW_CLOUDS, Icon.PARTLY_CLEAR_DAY);
+		mIconMap.put(WeatherData.ConditionCode.SCATTERED_CLOUDS, Icon.PARTLY_CLEAR_DAY);
+		mIconMap.put(WeatherData.ConditionCode.BROKEN_CLOUDS, Icon.LIGHT_CLOUDS);
+		mIconMap.put(WeatherData.ConditionCode.OVERCAST_CLOUDS, Icon.HEAVY_CLOUDS);
+		mIconMap.put(WeatherData.ConditionCode.TORNADO, Icon.WIND);
+		mIconMap.put(WeatherData.ConditionCode.TROPICAL_STORM, Icon.HEAVY_RAIN);
+		mIconMap.put(WeatherData.ConditionCode.HURRICANE, Icon.WIND);
+		mIconMap.put(WeatherData.ConditionCode.COLD, Icon.SNOWFLAKE);
+		mIconMap.put(WeatherData.ConditionCode.HOT, Icon.SUN);
+		mIconMap.put(WeatherData.ConditionCode.WINDY, Icon.WIND);
+		mIconMap.put(WeatherData.ConditionCode.HAIL, Icon.HAIL);
+	}
+
+	private Icon mapIcon(WeatherData.ConditionCode c, LocalDateTime t) {
+		LocalTime time = t.toLocalTime();
+		LocalTime rise = mSunrise.toLocalTime();
+		LocalTime set = mSunset.toLocalTime();
+
+		Icon i = mIconMap.get(c);
+
+		if (time.compareTo(rise) < 0 || time.compareTo(set) > 0) {
+			if (i == Icon.MIST_DAY)
+				i = Icon.MIST_NIGHT;
+
+			if (i == Icon.SUN)
+				i = Icon.MOON;
+
+			if (i == Icon.PARTLY_CLEAR_DAY)
+				i = Icon.PARTLY_CLEAR_NIGHT;
+		}
+
+		return i;
 	}
 
 	/**
@@ -203,28 +365,116 @@ public class WeatherCache {
 	public void refresh() throws APIException, CacheException {
 		// API call
 
-		mToday = new ArrayList<>();
-		mThisWeek = new TreeMap<>();
+		WeatherData data;
+		List<WeatherForecast> forecasts;
+
+		try {
+			data = mGordon.currentWeatherAtCity(mLocation);
+			forecasts = mGordon.forecastWeatherAtCity(mLocation);
+
+		} catch (IOException e) {
+			throw new APIException("Failed to reach server");
+		}
+
+		// Sunrise and sunset times
+
+		int sr = data.getSunrise();
+		int ss = data.getSunset();
+
+		mSunrise = LocalDateTime.ofInstant(Instant.ofEpochMilli(sr), ZoneId.systemDefault());
+		mSunset = LocalDateTime.ofInstant(Instant.ofEpochMilli(ss), ZoneId.systemDefault());
+
+		// Current summary
+
+		LocalDateTime time = LocalDateTime.now();
+
+		Icon i = mapIcon(data.getConditionCode(), time);
+		int temp = (int) data.getTemperature();
+
+		mSummary = new Record(i, temp, time);
+		mSummary.setLabel("Current");
+
+		// Weekly forecast
+
+		mThisWeek = new ArrayList<>();
+
+		List<Record> current = new ArrayList<>();
+		mThisWeek.add(current);
+
+		int count = 1;
+
+		for (WeatherForecast wf : forecasts) {
+			String[] s = wf.getDate().split(" ");
+
+			LocalDateTime t = LocalDateTime.parse(s[0] + "T" + s[1]);
+
+			if (! t.equals(time)) {
+				time = t;
+				current = new ArrayList<>();
+				mThisWeek.add(current);
+
+				count++;
+			}
+
+			i = mapIcon(wf.getConditionCode(), time);
+			temp = (int) data.getTemperature();
+
+			Record r = new Record(i, temp, time);
+
+			switch (count) {
+				case 1: r.setLabel("Today");
+				break;
+
+				case 2: r.setLabel("Tomorrow");
+				break;
+
+				default: r.setLabel(time.getDayOfWeek().toString());
+			}
+
+			current.add(r);
+		}
+
+		// Daily forecast
+
+		mToday = mThisWeek.get(0);
+
+		// Weather warnings
+
 		mWarnings = new ArrayList<>();
 
-		// TODO
+		boolean ice = false;
+		boolean vis = false;
+		boolean storm = false;
 
-		Collections.sort(mToday);
+		for (Record r : mToday) {
+			ice = ice || (r.getTemp() < 3);
 
-		for (List<Record> l : mThisWeek.values())
-			Collections.sort(l);
+			i = r.getIcon();
+
+			vis = vis || (i == Icon.MIST || i == Icon.MIST_DAY || i == Icon.MIST_NIGHT);
+
+			storm = storm || (i == Icon.THUNDERSTORM);
+		}
+
+		if (ice)
+			mWarnings.add(Warning.ICY);
+
+		if (vis)
+			mWarnings.add(Warning.POOR_VISIBILITY);
+
+		if (storm)
+			mWarnings.add(Warning.STORMY);
+
+		// Easter egg
+		LocalTime n = LocalTime.now();
+
+		if (n.getHour() < 1 || n.getHour() > 23)
+			mWarnings.add(Warning.WEREWOLVES);
 
 		saveToDisk();
 
 		// Save time stamp (if it succeeded)
 		mLastUpdated = LocalDateTime.now();
-
-		// Don't overwrite previous values before API call has succeeded
-			// - old data > no data
-
-		// Doesn't return any value
-			// Exception thrown if it fails (hopefully with a message)
-			// Data can be fetched with getters
 	}
 
 	private void saveToDisk() throws CacheException {
@@ -233,13 +483,19 @@ public class WeatherCache {
 			// Save time stamp
 
 			bw.write(mLastUpdated.toString());
-
 			bw.newLine();
 
 			// Save location
 
 			bw.write(mLocation);
+			bw.newLine();
 
+			// Sunrise & sunset
+
+			bw.write(mSunrise.toString());
+			bw.newLine();
+
+			bw.write(mSunset.toString());
 			bw.newLine();
 
 			// Blank line
@@ -248,24 +504,22 @@ public class WeatherCache {
 
 			// Save weekly forecast
 
-			for (Entry<LocalDate, List<Record>> entry : mThisWeek.entrySet()) {
-				bw.write(entry.getKey().toString());
-				bw.newLine();
-
-				for (Record r : entry.getValue()) {
+			for (List<Record> entry : mThisWeek) {
+				for (Record r : entry) {
 					bw.write(r.toString());
 					bw.newLine();
 				}
+
+				bw.write("___");
+				bw.newLine();
 			}
 
 			bw.newLine();
 
-			// Save daily forecast
+			// Save current summary
 
-			for (Record r : mToday) {
-				bw.write(r.toString());
-				bw.newLine();
-			}
+			bw.write(mSummary.toString());
+			bw.newLine();
 
 			bw.newLine();
 

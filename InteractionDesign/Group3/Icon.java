@@ -2,8 +2,7 @@ package InteractionDesign.Group3;
 
 /**
  * Represents a weather icon.
- * This is not final. We need to choose a set of icons to use.
  */
 public enum Icon {
-	SUN, SUN_WITH_CLOUD, CLOUD, RAIN, SNOW;
+	HAIL, HEAVY_CLOUDS, HEAVY_RAIN, HEAVY_SNOW, LIGHT_CLOUDS, LIGHT_RAIN, LIGHT_SNOW, MIST, MIST_DAY, MIST_NIGHT, MOON, PARTLY_CLEAR_DAY, PARTLY_CLEAR_NIGHT, SNOWFLAKE, SUN, THUNDERSTORM, WIND;
 }

@@ -6,14 +6,13 @@ import java.time.LocalDateTime;
  * Represents the weather forecast at a particular time.
  * Stores the temperature, weather icon, and a time stamp.
  * I think this will need expanding so we have enough data to recommend items.
- * This class is immutable.
  */
 public class Record implements Comparable<Record> {
 	private final Icon mIcon;
 	private final int mTemp;				// In Celcius
 	private final LocalDateTime mTimeStamp;	// Watch out for time zone issues
 
-	// TODO: add daylight times
+	private String mLabel;
 
 	/**
 	 * Instantiates Record with the parameters given
@@ -26,6 +25,8 @@ public class Record implements Comparable<Record> {
 		mIcon = i;
 		mTemp = t;
 		mTimeStamp = ts;
+
+		mLabel = "";
 	}
 
 	/**
@@ -38,9 +39,10 @@ public class Record implements Comparable<Record> {
 	public Record(String record) {
 		String[] vals = record.split(",");
 
-		mIcon = Icon.valueOf(vals[0]);
-		mTemp = Integer.parseInt(vals[1]);
-		mTimeStamp = LocalDateTime.parse(vals[2]);	// Should be ISO date eg. "2017-05-15T18:00:00"
+		mLabel = vals[0];
+		mIcon = Icon.valueOf(vals[1]);
+		mTemp = Integer.parseInt(vals[2]);
+		mTimeStamp = LocalDateTime.parse(vals[3]);	// Should be ISO date eg. "2017-05-15T18:00:00"
 	}
 
 	/**
@@ -50,6 +52,10 @@ public class Record implements Comparable<Record> {
 	 */
 	public Icon getIcon() {
 		return mIcon;
+	}
+
+	public String getLabel() {
+		return mLabel;
 	}
 
 	/**
@@ -70,8 +76,12 @@ public class Record implements Comparable<Record> {
 		return mTimeStamp;
 	}
 
+	public void setLabel(String l) {
+		mLabel = l;
+	}
+
 	public String toString() {
-		return mIcon.toString() + "," + mTemp + "," + mTimeStamp.toString();
+		return mLabel + "," + mIcon.toString() + "," + mTemp + "," + mTimeStamp.toString();
 	}
 
 	@Override
