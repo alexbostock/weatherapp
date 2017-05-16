@@ -71,9 +71,11 @@ public class WeatherCache {
 	 * @return			a list of Items
 	 */
 	public List<Item> getItems(LocalTime start, LocalTime fin) {
+		List<Item> result = new ArrayList<>();
+
 		// Function of times and daily forecast - TODO
 
-		return new ArrayList<>();
+		return result;
 	}
 
 	/**
