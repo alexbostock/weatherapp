@@ -1,292 +1,125 @@
 package InteractionDesign.Group3;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
-// TODO - suggested locations (search suggestions)
-
-/**
- * A cache of the most recently loaded weather data.
- * This acts as an interface between the frontend and the API.
- * The cache is saved to disk, so that is can be reloaded later.
- * This is a singleton. When instantiated, the cache is loaded from disk if a
- * cache file already exists.
- */
 public class WeatherData {
-	private static WeatherData theObj;
+	
+	public static enum ConditionCode {
+		UNKNOWN                         (000),
+		THUNDERSTORM_WITH_LIGHT_RAIN    (200),
+		THUNDERSTORM_WITH_RAIN          (201),
+		THUNDERSTORM_WITH_HEAVY_RAIN    (202),
+		LIGHT_THUNDERSTORM              (210),
+		THUNDERSTORM                    (211),
+		HEAVY_THUNDERSTORM              (212),
+		RAGGED_THUNDERSTORM             (221),
+		THUNDERSTORM_WITH_LIGHT_DRIZZLE (230),
+		THUNDERSTORM_WITH_DRIZZLE       (231),
+		THUNDERSTORM_WITH_HEAVY_DRIZZLE (232),
+		LIGHT_INTENSITY_DRIZZLE         (300),
+		DRIZZLE                         (301),
+		HEAVY_INTENSITY_DRIZZLE         (302),
+		LIGHT_INTENSITY_DRIZZLE_RAIN    (310),
+		DRIZZLE_RAIN                    (311),
+		HEAVY_INTENSITY_DRIZZLE_RAIN    (312),
+		SHOWER_DRIZZLE                  (321),
+		LIGHT_RAIN                      (500),
+		MODERATE_RAIN                   (501),
+		HEAVY_INTENSITY_RAIN            (502),
+		VERY_HEAVY_RAIN                 (503),
+		EXTREME_RAIN                    (504),
+		FREEZING_RAIN                   (511),
+		LIGHT_INTENSITY_SHOWER_RAIN     (520),
+		SHOWER_RAIN                     (521),
+		HEAVY_INTENSITY_SHOWER_RAIN     (522),
+		LIGHT_SNOW                      (600),
+		SNOW                            (601),
+		HEAVY_SNOW                      (602),
+		SLEET                           (611),
+		SHOWER_SNOW                     (621),
+		MIST                            (701),
+		SMOKE                           (711),
+		HAZE                            (721),
+		SAND_OR_DUST_WHIRLS             (731),
+		FOG                             (741),
+		SKY_IS_CLEAR                    (800),
+		FEW_CLOUDS                      (801),
+		SCATTERED_CLOUDS                (802),
+		BROKEN_CLOUDS                   (803),
+		OVERCAST_CLOUDS                 (804),
+		TORNADO                         (900),
+		TROPICAL_STORM                  (901),
+		HURRICANE                       (902),
+		COLD                            (903),
+		HOT                             (904),
+		WINDY                           (905),
+		HAIL                            (906);
 
-	private final String mCacheFile;
-	private LocalDateTime mLastUpdated;
-	private String mLocation;
-
-	private Map<LocalDate, List<Record>> mThisWeek;
-	private List<Record> mToday;
-	private List<Warning> mWarnings;
-
-	/**
-	 * Returns the singleton instance of WeatherData.
-	 *
-	 * @return					the singleton
-	 * @throws	CacheException	if the cache file fails to load (which may be
-	 *							because the cache file does not yet exist)
-	 */
-	public static WeatherData getWeatherDataObj() throws CacheException {
-		if (theObj == null)
-			theObj = new WeatherData();
-
-		return theObj;
-	}
-
-	private WeatherData() throws CacheException {
-		// Default values
-
-		mCacheFile = "weatherCache.csv";
-		mLocation = "Cambridge";
-
-		loadFromDisk();
-	}
-
-	/**
-	 * Gets a list of recommended items based on two time stamps and the daily
-	 * forecast. Not yet implemented...
-	 *
-	 * @param	start	the first time stamp
-	 * @param	fin		the second time stamp
-	 * @return			a list of Items
-	 */
-	public List<Item> getItems(LocalTime start, LocalTime fin) {
-		// Function of times and daily forecast - TODO
-
-		return new ArrayList<>();
-	}
-
-	/**
-	 * Gets the time stamp when the API was last accessed.
-	 *
-	 * @return			time stamp of last refresh
-	 */
-	public LocalDateTime getLastUpdated() {
-		return mLastUpdated;
-	}
-
-	/**
-	 * Gets the current location setting.
-	 *
-	 * @return			location string
-	 */
-	public String getLocation() {
-		return mLocation;
-	}
-
-	/**
-	 * Gets the weekly forecast. This is a map of date to forecast.
-	 * The Map is ordered by date, and each list is ordered by time.
-	 *
-	 * @return			the forecast for each day of the week
-	 */
-	public Map<LocalDate, List<Record>> getThisWeek() {
-		return mThisWeek;
-	}
-
-	/**
-	 * Gets the forecast for today. Each record gives weather data for a
-	 * particular time, as well as a time stamp.
-	 * The list is ordered.
-	 * Watch out for daily forecast not referring to today, if the cache is out
-	 * of date (check time stamps).
-	 *
-	 * @return			daily weather forecast
-	 */
-	public List<Record> getToday() {
-		return mToday;
-	}
-
-	/**
-	 * Gets any weather warnings.
-	 *
-	 * @return			list of warnings
-	 */
-	public List<Warning> getWarnings() {
-		return mWarnings;
-	}
-
-	private void loadFromDisk() throws CacheException {
-		File f = new File(mCacheFile);
-
-		if (! f.isFile())
-			// Note that this case is
-			throw new CacheException("No cache file present");
-
-		try (BufferedReader br = new BufferedReader(new FileReader(mCacheFile))) {
-
-			// Load time stamp
-
-			String line = br.readLine();
-			mLastUpdated = LocalDateTime.parse(line);
-
-			line = br.readLine();
-			mLocation = line;
-
-			br.readLine();	// Should be a blank line
-
-			// Load weekly forecast
-
-			mThisWeek = new TreeMap<>();
-
-			List<Record> list = new ArrayList<>();
-
-			while (! (line = br.readLine()).equals("")) {
-				if (line.startsWith("day")) {
-					LocalDate date = LocalDate.parse(line.split(":")[1]);
-					list = new ArrayList<>();
-					mThisWeek.put(date, list);
-
-				} else {
-					list.add(new Record(line));
-				}
+		private int id;
+		
+		private ConditionCode (int code) {
+			this.id = code;
+		}
+		
+		public static ConditionCode valueof (int id) {
+			for (ConditionCode condition : ConditionCode.values()) {
+				if (condition.id == id)
+					return condition;
 			}
+			return ConditionCode.UNKNOWN;
+		}
 
-			// Load daily forecast (not necessarily today's !)
-
-			mToday = new ArrayList<>();
-
-			while (! (line = br.readLine()).equals("")) {
-				mToday.add(new Record(line));
-			}
-
-			// Load weather warnings
-
-			mWarnings = new ArrayList<>();
-
-			while ((line = br.readLine()) != null) {
-				mWarnings.add(Warning.valueOf(line));
-			}
-
-			// TODO - check whether the cached daily forecast saved is today's
-				// (Low priority - should be fine for the tick)
-
-		} catch (DateTimeParseException e) {
-			throw new CacheException("Invalid cache file");
-
-		} catch (IOException e) {
-			throw new CacheException("Failed to load cache file");
+		public int getId () {
+			return this.id;
 		}
 	}
-
-	/**
-	 * Accesses the API and updates the cache. The latest weather forecast is
-	 * downloaded. If no exception is thrown, the latest data can be accessed
-	 * through getters. The latest forecast is also saved to file, so that it
-	 * can be loaded if the app is restarted.
-	 *
-	 * @throws	APIException	if downloading weather forecast fails
-	 * @throws	CacheException	if saving to disk fails
-	 */
-	public void refresh() throws APIException, CacheException {
-		// API call
-
-		// mToday =
-		// mThisWeek =
-		// mWarnings =
-
-		saveToDisk();
-
-		// Save time stamp (if it succeeded)
-		mLastUpdated = LocalDateTime.now();
-
-		// Don't overwrite previous values before API call has succeeded
-			// - old data > no data
-
-		// Ensure that mToday and mThisWeek are sorted chronologically
-
-		// Doesn't return any value
-			// Exception thrown if it fails (hopefully with a message)
-			// Data can be fetched with getters
+	
+	private final ConditionCode mCode;
+	private final String mDescription;
+	
+	private final double mTemp;
+	private final double mPressure;
+	private final double mHumidity;
+	
+	private final double mWindSpeed;
+	
+	public WeatherData(JSONObject json) throws JSONException {
+		JSONObject jsonWeather = json.getJSONArray("weather").getJSONObject(0);
+		mCode = ConditionCode.valueof(jsonWeather.getInt("id"));
+		mDescription = jsonWeather.getString("description");
+		
+		JSONObject jsonMain = json.getJSONObject("main");
+		mTemp = jsonMain.getDouble("temp");
+		mPressure = jsonMain.getDouble("pressure");
+		mHumidity = jsonMain.getDouble("humidity");
+		
+		JSONObject jsonWind = json.getJSONObject("wind");
+		mWindSpeed = jsonWind.getDouble("speed");
 	}
-
-	private void saveToDisk() throws CacheException {
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(mCacheFile))) {
-
-			// Save time stamp
-
-			bw.write(mLastUpdated.toString());
-
-			bw.newLine();
-
-			// Save location
-
-			bw.write(mLocation);
-
-			bw.newLine();
-
-			// Blank line
-
-			bw.newLine();
-
-			// Save weekly forecast
-
-			for (Entry<LocalDate, List<Record>> entry : mThisWeek.entrySet()) {
-				bw.write(entry.getKey().toString());
-				bw.newLine();
-
-				for (Record r : entry.getValue()) {
-					bw.write(r.toString());
-					bw.newLine();
-				}
-			}
-
-			bw.newLine();
-
-			// Save daily forecast
-
-			for (Record r : mToday) {
-				bw.write(r.toString());
-				bw.newLine();
-			}
-
-			bw.newLine();
-
-			// Save weather warnings
-
-			bw.newLine();
-
-			for (Warning w : mWarnings) {
-				bw.write(w.toString());
-				bw.newLine();
-			}
-
-		} catch (IOException e) {
-			throw new CacheException("Failed to save to cache file");
-		}	
+	
+	public ConditionCode getConditionCode() {
+		return mCode;
 	}
-
-	/**
-	 * Updates the location and saves to disk.
-	 * Note that this is only a string, and not currently validated.
-	 * We should look at validating it with the API.
-	 *
-	 * @param	l				location string
-	 * @throws	CacheException	if saving to disk fails
-	 */
-	public void setLocation(String l) throws CacheException {
-		mLocation = l;
-
-		saveToDisk();
+	
+	public String getDescription() {
+		return mDescription;
 	}
+	
+	public double getTemperature() {
+		return mTemp;
+	}
+	
+	public double getPressure() {
+		return mPressure;
+	}
+	
+	public double getHumidity() {
+		return mHumidity;
+	}
+	
+	public double getWindSpeed() {
+		return mWindSpeed;
+	}
+	
 }
