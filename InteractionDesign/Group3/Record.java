@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
  * Stores the temperature, weather icon, and a time stamp.
  * I think this will need expanding so we have enough data to recommend items.
  * This class immutable.
- *
  */
 public class Record implements Comparable<Record> {
 	private final Icon mIcon;

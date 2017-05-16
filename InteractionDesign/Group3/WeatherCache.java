@@ -7,13 +7,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -201,9 +201,16 @@ public class WeatherCache {
 	public void refresh() throws APIException, CacheException {
 		// API call
 
-		// mToday =
-		// mThisWeek =
-		// mWarnings =
+		mToday = new ArrayList<>();
+		mThisWeek = new TreeMap<>();
+		mWarnings = new ArrayList<>();
+
+		// TODO
+
+		Collections.sort(mToday);
+
+		for (List<Record> l : mThisWeek.values())
+			Collections.sort(l);
 
 		saveToDisk();
 
@@ -212,8 +219,6 @@ public class WeatherCache {
 
 		// Don't overwrite previous values before API call has succeeded
 			// - old data > no data
-
-		// Ensure that mToday and mThisWeek are sorted chronologically
 
 		// Doesn't return any value
 			// Exception thrown if it fails (hopefully with a message)
