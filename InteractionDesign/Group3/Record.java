@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * This class immutable.
  *
  */
-public class Record {
+public class Record implements Comparable<Record> {
 	private final Icon mIcon;
 	private final int mTemp;				// In Celcius
 	private final LocalDateTime mTimeStamp;	// Watch out for time zone issues
@@ -75,5 +75,10 @@ public class Record {
 
 	public String toString() {
 		return mIcon.toString() + "," + mTemp + "," + mTimeStamp.toString();
+	}
+
+	@Override
+	public int compareTo(Record o) {
+		return this.mTimeStamp.compareTo(o.mTimeStamp);
 	}
 }
