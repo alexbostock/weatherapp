@@ -7,7 +7,7 @@ public class Testing {
 	public static void main(String[] args) throws APIException, CacheException, IOException {
 		WeatherCache cache = WeatherCache.getCache();
 
-		cache.setLocation("Cambridge, GB");
+		// cache.setLocation("Cambridge, GB");
 
 		LocalTime t1 = LocalTime.now();
 		LocalTime t2 = t1.plusHours(6);

@@ -255,6 +255,7 @@ public class WeatherCache {
 			mThisWeek = new ArrayList<>();
 
 			List<Record> list = new ArrayList<>();
+			mThisWeek.add(list);
 
 			while (! (line = br.readLine()).equals("")) {
 				if (line.equals("___")) {
@@ -265,6 +266,8 @@ public class WeatherCache {
 					list.add(new Record(line));
 				}
 			}
+
+			mThisWeek.remove(mThisWeek.size() - 1);
 
 			// Load daily summary
 
