@@ -395,8 +395,8 @@ public class WeatherCache {
 		int sr = data.getSunrise();
 		int ss = data.getSunset();
 
-		mSunrise = LocalDateTime.ofInstant(Instant.ofEpochMilli(sr), ZoneId.systemDefault());
-		mSunset = LocalDateTime.ofInstant(Instant.ofEpochMilli(ss), ZoneId.systemDefault());
+		mSunrise = LocalDateTime.ofInstant(Instant.ofEpochSecond(sr), ZoneId.systemDefault());
+		mSunset = LocalDateTime.ofInstant(Instant.ofEpochSecond(ss), ZoneId.systemDefault());
 
 		// Current summary
 

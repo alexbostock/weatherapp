@@ -9,8 +9,10 @@ public class Testing {
 
 		// cache.setLocation("Cambridge, GB");
 
+		cache.refresh();
+
 		LocalTime t1 = LocalTime.now();
-		LocalTime t2 = t1.plusHours(6);
+		LocalTime t2 = t1.plusHours(2);
 
 		System.out.println(t1 + " " + t2);
 
