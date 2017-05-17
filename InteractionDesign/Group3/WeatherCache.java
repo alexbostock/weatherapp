@@ -40,7 +40,6 @@ public class WeatherCache {
 
 	private Record mSummary;
 	private List<List<Record>> mThisWeek;
-	private List<Record> mToday;
 	private List<Warning> mWarnings;
 
 	private LocalDateTime mSunrise;
@@ -55,7 +54,7 @@ public class WeatherCache {
 	 * @throws	CacheException	if the cache file fails to load (which may be
 	 *							because the cache file does not yet exist)
 	 */
-	public static WeatherCache getWeatherDataObj() throws APIException, CacheException {
+	public static WeatherCache getCache() throws APIException, CacheException {
 		if (theObj == null)
 			theObj = new WeatherCache();
 
@@ -70,7 +69,7 @@ public class WeatherCache {
 		// Default values
 
 		mCacheFile = "weatherCache.csv";
-		mLocation = "Cambridge";
+		mLocation = "Cambridge, GB";
 
 		loadFromDisk();
 
@@ -90,7 +89,7 @@ public class WeatherCache {
 		if (! isFresh())
 			refresh();
 
-		if (mToday == null)
+		if (mThisWeek == null)
 			throw new CacheException("Recommending items failed");
 
 		boolean rain = false;
@@ -99,7 +98,7 @@ public class WeatherCache {
 		boolean heavyRain = false;
 		boolean snow = false;
 
-		for (Record r : mToday) {
+		for (Record r : getToday()) {
 			LocalTime t = r.getTimeStamp().toLocalTime();
 
 			if (t.compareTo(start) > 0 || t.compareTo(fin.plusHours(1)) < 0) {
@@ -164,6 +163,13 @@ public class WeatherCache {
 		return mLocation;
 	}
 
+	public Record getSummary() throws APIException, CacheException {
+		if (! isFresh())
+			refresh();
+
+		return mSummary;
+	}
+
 	/**
 	 * Gets the weekly forecast. This is a map of date to forecast.
 	 * The Map is ordered by date, and each list is ordered by time.
@@ -190,7 +196,7 @@ public class WeatherCache {
 		if (! isFresh())
 			refresh();
 
-		return mToday;
+		return mThisWeek.get(0);
 	}
 
 	/**
@@ -206,6 +212,9 @@ public class WeatherCache {
 	}
 
 	private boolean isFresh() {
+		if (mLastUpdated == null)
+			return false;
+
 		int comp = LocalDateTime.now().compareTo(mLastUpdated.plusHours(1));
 
 		return comp < 0;
@@ -214,9 +223,10 @@ public class WeatherCache {
 	private void loadFromDisk() throws CacheException {
 		File f = new File(mCacheFile);
 
-		if (! f.isFile())
-			// Note that this case is
-			throw new CacheException("No cache file present");
+		if (! f.isFile()) {
+			System.out.println("No cache file present");
+			return;
+		}
 
 		try (BufferedReader br = new BufferedReader(new FileReader(mCacheFile))) {
 
@@ -254,8 +264,6 @@ public class WeatherCache {
 				}
 			}
 
-			mToday = mThisWeek.get(0);
-
 			// Load daily summary
 
 			line = br.readLine();
@@ -268,7 +276,8 @@ public class WeatherCache {
 			mWarnings = new ArrayList<>();
 
 			while ((line = br.readLine()) != null) {
-				mWarnings.add(Warning.valueOf(line));
+				if (! line.equals(""))
+					mWarnings.add(Warning.valueOf(line));
 			}
 
 		} catch (DateTimeParseException e) {
@@ -373,7 +382,7 @@ public class WeatherCache {
 			forecasts = mGordon.forecastWeatherAtCity(mLocation);
 
 		} catch (IOException e) {
-			throw new APIException("Failed to reach server");
+			throw new APIException(e.getMessage());
 		}
 
 		// Sunrise and sunset times
@@ -408,13 +417,14 @@ public class WeatherCache {
 
 			LocalDateTime t = LocalDateTime.parse(s[0] + "T" + s[1]);
 
-			if (! t.equals(time)) {
-				time = t;
+			if (! t.toLocalDate().equals(time.toLocalDate())) {
 				current = new ArrayList<>();
 				mThisWeek.add(current);
 
 				count++;
 			}
+
+			time = t;
 
 			i = mapIcon(wf.getConditionCode(), time);
 			temp = (int) data.getTemperature();
@@ -434,9 +444,8 @@ public class WeatherCache {
 			current.add(r);
 		}
 
-		// Daily forecast
-
-		mToday = mThisWeek.get(0);
+		// Save time stamp
+		mLastUpdated = LocalDateTime.now();
 
 		// Weather warnings
 
@@ -446,8 +455,8 @@ public class WeatherCache {
 		boolean vis = false;
 		boolean storm = false;
 
-		for (Record r : mToday) {
-			ice = ice || (r.getTemp() < 3);
+		for (Record r : getToday()) {
+			ice = ice || (r.getTemp() < 5);
 
 			i = r.getIcon();
 
@@ -465,16 +474,7 @@ public class WeatherCache {
 		if (storm)
 			mWarnings.add(Warning.STORMY);
 
-		// Easter egg
-		LocalTime n = LocalTime.now();
-
-		if (n.getHour() < 1 || n.getHour() > 23)
-			mWarnings.add(Warning.WEREWOLVES);
-
 		saveToDisk();
-
-		// Save time stamp (if it succeeded)
-		mLastUpdated = LocalDateTime.now();
 	}
 
 	private void saveToDisk() throws CacheException {
@@ -545,9 +545,9 @@ public class WeatherCache {
 	 * @param	l				location string
 	 * @throws	CacheException	if saving to disk fails
 	 */
-	public void setLocation(String l) throws CacheException {
+	public void setLocation(String l) throws APIException, CacheException {
 		mLocation = l;
 
-		saveToDisk();
+		refresh();
 	}
 }

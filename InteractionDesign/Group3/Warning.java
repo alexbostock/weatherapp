@@ -5,5 +5,5 @@ package InteractionDesign.Group3;
  * We need to finalise the set of warnings.
  */
 public enum Warning {
-	ICY, POOR_VISIBILITY, STORMY, WEREWOLVES;
+	ICY, POOR_VISIBILITY, STORMY;
 }
