@@ -22,6 +22,8 @@ import java.util.Map;
 
 // TODO - suggested locations (search suggestions)
 
+// TODO - docs
+
 /**
  * A cache of the most recently loaded weather data.
  * This acts as an interface between the frontend and the API.
