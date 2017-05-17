@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 // TODO - suggested locations (search suggestions)
+	// https://developers.google.com/places/web-service/autocomplete
 
 // TODO - docs
 
@@ -255,19 +256,16 @@ public class WeatherCache {
 			mThisWeek = new ArrayList<>();
 
 			List<Record> list = new ArrayList<>();
-			mThisWeek.add(list);
 
 			while (! (line = br.readLine()).equals("")) {
 				if (line.equals("___")) {
-					list = new ArrayList<>();
 					mThisWeek.add(list);
+					list = new ArrayList<>();
 
 				} else {
 					list.add(new Record(line));
 				}
 			}
-
-			mThisWeek.remove(mThisWeek.size() - 1);
 
 			// Load daily summary
 
