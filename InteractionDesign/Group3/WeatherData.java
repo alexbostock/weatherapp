@@ -7,6 +7,9 @@ import com.google.gson.JsonObject;
  */
 public class WeatherData {
 	
+	/**
+	 * A brief summary of the weather, according to the API
+	 */
 	public static enum ConditionCode {
 		//weather conditions and their corresponding OWM weather_id
 		UNKNOWN                         (000),
