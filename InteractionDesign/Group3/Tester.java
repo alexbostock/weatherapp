@@ -6,7 +6,7 @@ import java.time.LocalTime;
 /**
  * A class used for testing purposes only
  */
-public class Testing {
+public class Tester {
 	public static void main(String[] args) throws APIException, CacheException, IOException {
 		long time1 = System.nanoTime();
 
