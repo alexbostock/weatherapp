@@ -96,6 +96,8 @@ public class WeatherCache {
 	 * @param	start	the first time stamp
 	 * @param	fin		the second time stamp
 	 * @return	a list of Items
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public List<Item> getItems(LocalTime start, LocalTime fin) throws APIException, CacheException {
 		if (! isFresh())
@@ -180,6 +182,8 @@ public class WeatherCache {
 	 * Gets the headline summary of the current weather.
 	 *
 	 * @return	the weather right now
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public Record getSummary() throws APIException, CacheException {
 		if (! isFresh())
@@ -195,6 +199,8 @@ public class WeatherCache {
 	 * Every record has a time stamp, and the lists are sorted chronologically.
 	 *
 	 * @return	the forecast for each day of the week
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public List<List<Record>> getThisWeek() throws APIException, CacheException {
 		if (! isFresh())
@@ -210,6 +216,8 @@ public class WeatherCache {
 	 * The list is ordered chronolgically.
 	 *
 	 * @return	daily weather forecast
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public List<Record> getToday() throws APIException, CacheException {
 		if (! isFresh())
@@ -222,6 +230,8 @@ public class WeatherCache {
 	 * Gets any weather warnings.
 	 *
 	 * @return	list of warnings
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public List<Warning> getWarnings() throws APIException, CacheException {
 		if (! isFresh())

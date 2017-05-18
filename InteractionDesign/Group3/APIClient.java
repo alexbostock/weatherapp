@@ -1,6 +1,7 @@
 package InteractionDesign.Group3;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -31,7 +32,7 @@ public class APIClient {
 	 * Instantiates the client, and loads location suggestions from disk.
 	 *
 	 * @param	file	location of the city list file
-	 * @throws	FileNotFoundException
+	 * @throws	FileNotFoundException	if the file does not exist
 	 */
 	public APIClient(String file) throws FileNotFoundException {
 		mPath = file;
