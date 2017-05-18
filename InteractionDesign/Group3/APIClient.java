@@ -26,25 +26,6 @@ public class APIClient {
 	// The start of every URL call to the API
 	private final String baseURL = "http://api.openweathermap.org/data/2.5/";
 
-	// /**
-	//  * Instantiates the client, and loads location suggestions from disk.
-	//  *
-	//  * @param	file	location of the city list file
-	//  * @throws	FileNotFoundException	if the file does not exist
-	//  */
-	// public APIClient() {
-	// 	mPath = file;
-
-	// 	JsonReader reader = new JsonReader(new FileReader(mPath));
-	// 	JsonParser parser = new JsonParser();
-	// 	JsonArray array = parser.parse(reader).getAsJsonArray();
-	// 	mLocations = new String[array.size()];
-	// 	for (int i = 0; i < mLocations.length; ++i) {
-	// 		JsonObject loc = array.get(i).getAsJsonObject();
-	// 		mLocations[i] = loc.get("name").getAsString() + ", " + loc.get("country").getAsString();
-	// 	}
-	// }
-
 	/**
 	 * Gets the current weather data at a particular city, from the city name.
 	 *
