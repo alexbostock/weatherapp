@@ -91,7 +91,7 @@ public class WeatherCache {
 		} catch (IOException e) {
 			System.out.println("Fatal error");
 			System.out.println("City list file not present");
-			System.out.println("File must be present at data/current.city.list.min.json");
+			System.out.println("File must be present at data/cityList.text");
 			System.exit(1);
 		}
 
