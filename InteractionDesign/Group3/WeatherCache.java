@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * A cache of the most recently loaded weather data.
  * This acts as an interface between the frontend and the API.
- * The cache is saved to disk, so that is can be reloaded later.
+ * Any data fetched are no more than 1 hour old.
  * This is a singleton. When instantiated, the cache is loaded from disk if a
  * cache file already exists.
  */
@@ -32,6 +32,9 @@ public class WeatherCache {
 	private static WeatherCache theObj;
 
 	private APIClient mGordon;
+	private SearchSuggester mSearchSug;
+
+	private Map<WeatherData.ConditionCode, Icon> mIconMap;
 
 	private final String mCacheFile;
 	private final String mCityListFile;
@@ -45,10 +48,6 @@ public class WeatherCache {
 
 	private LocalDateTime mSunrise;
 	private LocalDateTime mSunset;
-
-	private SearchSuggester mSearchSug;
-
-	private Map<WeatherData.ConditionCode, Icon> mIconMap;
 
 	/**
 	 * Returns the singleton instance of WeatherData.
@@ -67,6 +66,7 @@ public class WeatherCache {
 
 	private WeatherCache() throws APIException, CacheException {
 		long t1 = System.nanoTime();
+
 		// Default values
 
 		mCacheFile = "data/weatherCache.csv";
@@ -103,7 +103,7 @@ public class WeatherCache {
 
 	/**
 	 * Gets a list of recommended items based on two time stamps and the daily
-	 * forecast. Not yet implemented...
+	 * forecast.
 	 *
 	 * @param	start	the first time stamp
 	 * @param	fin		the second time stamp
@@ -183,6 +183,7 @@ public class WeatherCache {
 
 	/**
 	 * Gets the current location setting.
+	 * Location should be of the form [city name], [ISO 3166 country code]
 	 *
 	 * @return	location string
 	 */
