@@ -32,7 +32,7 @@ public class SearchSuggester {
 		JsonParser parser = new JsonParser();
 		JsonArray json = parser.parse(br).getAsJsonArray();
 
-		List<String> strings = new ArrayList<>();
+		List<String> strings = new ArrayList<>(22635);
 
 		for (JsonElement j : json) {
 			JsonObject jo = j.getAsJsonObject();
@@ -47,7 +47,7 @@ public class SearchSuggester {
 			mSuggestionMap.put(c, subMap);
 
 			for (char d = 'a'; d <= 'z'; d++) {
-				subMap.put(d, new ArrayList<>());
+				subMap.put(d, new ArrayList<>(50));
 			}
 		}
 

@@ -66,6 +66,7 @@ public class WeatherCache {
 	}
 
 	private WeatherCache() throws APIException, CacheException {
+		long t1 = System.nanoTime();
 		// Default values
 
 		mCacheFile = "data/weatherCache.csv";
@@ -82,6 +83,8 @@ public class WeatherCache {
 		if (! isFresh())
 			refresh();
 
+		long t2 = System.nanoTime();
+
 		try {
 			mSearchSug = new SearchSuggester(mCityListFile);
 
@@ -91,6 +94,11 @@ public class WeatherCache {
 			System.out.println("File must be present at data/current.city.list.min.json");
 			System.exit(1);
 		}
+
+		long t3 = System.nanoTime();
+
+		System.out.println("SearchSuggester instantiated in " + (t3 - t2) / 1000000 + "ms");
+		System.out.println("WeatherCache instantiated in " + (t3 - t1) / 1000000 + "ms (including the above)");
 	}
 
 	/**
