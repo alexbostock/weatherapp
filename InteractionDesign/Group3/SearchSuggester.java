@@ -9,11 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 /**
  * Gives search suggestions for city names.
  */
@@ -23,22 +18,21 @@ public class SearchSuggester {
 	/**
 	 * Constructs search suggestion engine for a list of cities.
 	 *
-	 * @param	file	JSON file containing a list of cities
+	 * @param	file	text file containing a list of cities
 	 * @throws IOException	if the file cannot be loaded
 	 */
 	public SearchSuggester(String file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 
-		JsonParser parser = new JsonParser();
-		JsonArray json = parser.parse(br).getAsJsonArray();
-
+		// 22635 is the number of cities
 		List<String> strings = new ArrayList<>(22635);
 
-		for (JsonElement j : json) {
-			JsonObject jo = j.getAsJsonObject();
-			String s = jo.get("name").getAsString() + ", " + jo.get("country").getAsString();
-			strings.add(s);
+		String line;
+		while ((line = br.readLine()) != null) {
+			strings.add(line);
 		}
+
+		br.close();
 
 		mSuggestionMap = new HashMap<>();
 

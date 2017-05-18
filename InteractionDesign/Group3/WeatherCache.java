@@ -70,7 +70,7 @@ public class WeatherCache {
 		// Default values
 
 		mCacheFile = "data/weatherCache.csv";
-		mCityListFile = "data/current.city.list.min.json";
+		mCityListFile = "data/cityList.txt";
 
 		mLocation = "Cambridge, GB";
 
@@ -417,6 +417,8 @@ public class WeatherCache {
 	}
 
 	private void refresh() throws APIException, CacheException {
+		long time1 = System.nanoTime();
+
 		// API call
 
 		WeatherData data;
@@ -520,6 +522,10 @@ public class WeatherCache {
 			mWarnings.add(Warning.STORMY);
 
 		saveToDisk();
+
+		long time2 = System.nanoTime();
+
+		System.out.println("Data refreshed in " + (time2 - time1) / 1000000 + "ms (including saving to disk)");
 	}
 
 	private void saveToDisk() throws CacheException {

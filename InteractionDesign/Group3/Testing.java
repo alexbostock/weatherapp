@@ -12,7 +12,8 @@ public class Testing {
 
 		WeatherCache cache = WeatherCache.getCache();
 
-		// cache.setLocation("Cambridge, GB");
+		// Trigger a refresh (API call)
+		cache.setLocation("Cambridge, GB");
 
 		LocalTime t1 = LocalTime.now();
 		LocalTime t2 = t1.plusHours(4);
@@ -46,11 +47,5 @@ public class Testing {
 		long time2 = System.nanoTime();
 
 		System.out.println("Test completed in " + (time2 - time1) / 1000000 + "ms");
-
-		// Sample time to run test without API calls:	2550ms
-		// Sample time to run test with API calls:		3253ms
-
-		// Both samples on my 2014 MacBook Air
-		// I'd do average of 3, but I'm lazy
 	}
 }
