@@ -21,33 +21,29 @@ import com.google.gson.stream.JsonReader;
  */
 public class APIClient {
 
-	// Array of locations for which we have data
-	private String[] mLocations;
 	// The part of the URL corresponding to the API key
 	private final String APPID = "&APPID=dcf195ce911b00f98dcd3f9f077cb234";
 	// The start of every URL call to the API
 	private final String baseURL = "http://api.openweathermap.org/data/2.5/";
-	// Location of json document with locations on disk
-	private final String mPath;
 
-	/**
-	 * Instantiates the client, and loads location suggestions from disk.
-	 *
-	 * @param	file	location of the city list file
-	 * @throws	FileNotFoundException	if the file does not exist
-	 */
-	public APIClient(String file) throws FileNotFoundException {
-		mPath = file;
+	// /**
+	//  * Instantiates the client, and loads location suggestions from disk.
+	//  *
+	//  * @param	file	location of the city list file
+	//  * @throws	FileNotFoundException	if the file does not exist
+	//  */
+	// public APIClient() {
+	// 	mPath = file;
 
-		JsonReader reader = new JsonReader(new FileReader(mPath));
-		JsonParser parser = new JsonParser();
-		JsonArray array = parser.parse(reader).getAsJsonArray();
-		mLocations = new String[array.size()];
-		for (int i = 0; i < mLocations.length; ++i) {
-			JsonObject loc = array.get(i).getAsJsonObject();
-			mLocations[i] = loc.get("name").getAsString() + ", " + loc.get("country").getAsString();
-		}
-	}
+	// 	JsonReader reader = new JsonReader(new FileReader(mPath));
+	// 	JsonParser parser = new JsonParser();
+	// 	JsonArray array = parser.parse(reader).getAsJsonArray();
+	// 	mLocations = new String[array.size()];
+	// 	for (int i = 0; i < mLocations.length; ++i) {
+	// 		JsonObject loc = array.get(i).getAsJsonObject();
+	// 		mLocations[i] = loc.get("name").getAsString() + ", " + loc.get("country").getAsString();
+	// 	}
+	// }
 
 	/**
 	 * Gets the current weather data at a particular city, from the city name.

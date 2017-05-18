@@ -46,6 +46,8 @@ public class WeatherCache {
 	private LocalDateTime mSunrise;
 	private LocalDateTime mSunset;
 
+	private SearchSuggester mSearchSug;
+
 	private Map<WeatherData.ConditionCode, Icon> mIconMap;
 
 	/**
@@ -73,19 +75,20 @@ public class WeatherCache {
 
 		makeIconMap();
 
+		mGordon = new APIClient();
+
+		loadFromDisk();
+
+		if (! isFresh())
+			refresh();
+
 		try {
-			mGordon = new APIClient(mCityListFile);
+			mSearchSug = new SearchSuggester(mCityListFile);
 
-			loadFromDisk();
-
-			if (! isFresh())
-				refresh();
-
-		} catch (FileNotFoundException e) {
-			System.out.println("The app is broken");
-			System.out.println("There must be a city list file:");
-			System.out.println("data/current.city.list.min.json");
-
+		} catch (IOException e) {
+			System.out.println("Fatal error");
+			System.out.println("City list file not present");
+			System.out.println("File must be present at data/current.city.list.min.json");
 			System.exit(1);
 		}
 	}
@@ -177,6 +180,19 @@ public class WeatherCache {
 	 */
 	public String getLocation() {
 		return mLocation;
+	}
+
+	/**
+	 * Recommends cities given the start of a city name.
+	 * The input is case-insensitive.
+	 * Returns null if the input is less than 3 characters.
+	 * The value returned is of the form [city name], [ISO 3166 country code]
+	 *
+	 * @param	start	the beginning of a city name
+	 * @return	a list of cities matching the request
+	 */
+	public List<String> getSearchSuggestions(String s) {
+		return mSearchSug.getSuggestions(s);
 	}
 
 	/**

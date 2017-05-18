@@ -27,5 +27,17 @@ public class Testing {
 		System.out.println(cache.getItems(t1, t2));
 		System.out.println("Warnings");
 		System.out.println(cache.getWarnings());
+
+		System.out.println("");
+
+		System.out.println("Search suggestions");
+		System.out.println("Cam");
+		System.out.println(cache.getSearchSuggestions("Cam"));
+		System.out.println("");
+		System.out.println("Camb");
+		System.out.println(cache.getSearchSuggestions("Camb"));
+		System.out.println("");
+		System.out.println("Cambr");
+		System.out.println(cache.getSearchSuggestions("Cambr"));
 	}
 }
