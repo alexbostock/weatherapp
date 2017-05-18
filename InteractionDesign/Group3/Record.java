@@ -54,6 +54,11 @@ public class Record implements Comparable<Record> {
 		return mIcon;
 	}
 
+	/**
+	 * Gets the label of this record. eg. "Today", "Tomrrow", "Wednesday" etc.
+	 *
+	 * @return	the label
+	 */
 	public String getLabel() {
 		return mLabel;
 	}
@@ -76,6 +81,12 @@ public class Record implements Comparable<Record> {
 		return mTimeStamp;
 	}
 
+	/**
+	 * Updates the record's label to the given string.
+	 * The label should have a value such "Today", "Tommorow", or "Tuesday"
+	 *
+	 * @param	l	the new label
+	 */
 	public void setLabel(String l) {
 		mLabel = l;
 	}

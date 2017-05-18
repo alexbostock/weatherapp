@@ -20,11 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO - suggested locations (search suggestions)
-	// https://developers.google.com/places/web-service/autocomplete
-
-// TODO - docs
-
 /**
  * A cache of the most recently loaded weather data.
  * This acts as an interface between the frontend and the API.
@@ -38,6 +33,8 @@ public class WeatherCache {
 	private APIClient mGordon;
 
 	private final String mCacheFile;
+	private final String mCityListFile;
+
 	private LocalDateTime mLastUpdated;
 	private String mLocation;
 
@@ -52,10 +49,11 @@ public class WeatherCache {
 
 	/**
 	 * Returns the singleton instance of WeatherData.
+	 * After this call, the cache will have up to date weather data, unless an exception is thrown.
 	 *
-	 * @return					the singleton
-	 * @throws	CacheException	if the cache file fails to load (which may be
-	 *							because the cache file does not yet exist)
+	 * @return	the singleton
+	 * @throws	APIException	if fetching weather data from the API fails
+	 * @throws	CacheException	if the cache file is invalid
 	 */
 	public static WeatherCache getCache() throws APIException, CacheException {
 		if (theObj == null)
@@ -65,19 +63,30 @@ public class WeatherCache {
 	}
 
 	private WeatherCache() throws APIException, CacheException {
-		mGordon = new APIClient();
+		try {
+			mGordon = new APIClient(mCityListFile);
 
-		makeIconMap();
+			makeIconMap();
 
-		// Default values
+			// Default values
 
-		mCacheFile = "weatherCache.csv";
-		mLocation = "Cambridge, GB";
+			mCacheFile = "data/weatherCache.csv";
+			mCityListFile = "data/current.city.list.min.json";
 
-		loadFromDisk();
+			mLocation = "Cambridge, GB";
 
-		if (! isFresh())
-			refresh();
+			loadFromDisk();
+
+			if (! isFresh())
+				refresh();
+
+		} catch (FileNotFoundException e) {
+			System.out.println("The app is broken");
+			System.out.println("There must be a city list file:");
+			System.out.println("data/current.city.list.min.json");
+
+			System.exit(1);
+		}
 	}
 
 	/**
@@ -86,7 +95,7 @@ public class WeatherCache {
 	 *
 	 * @param	start	the first time stamp
 	 * @param	fin		the second time stamp
-	 * @return			a list of Items
+	 * @return	a list of Items
 	 */
 	public List<Item> getItems(LocalTime start, LocalTime fin) throws APIException, CacheException {
 		if (! isFresh())
@@ -152,7 +161,7 @@ public class WeatherCache {
 	/**
 	 * Gets the time stamp when the API was last accessed.
 	 *
-	 * @return			time stamp of last refresh
+	 * @return	time stamp of last refresh
 	 */
 	public LocalDateTime getLastUpdated() {
 		return mLastUpdated;
@@ -161,12 +170,17 @@ public class WeatherCache {
 	/**
 	 * Gets the current location setting.
 	 *
-	 * @return			location string
+	 * @return	location string
 	 */
 	public String getLocation() {
 		return mLocation;
 	}
 
+	/**
+	 * Gets the headline summary of the current weather.
+	 *
+	 * @return	the weather right now
+	 */
 	public Record getSummary() throws APIException, CacheException {
 		if (! isFresh())
 			refresh();
@@ -175,10 +189,12 @@ public class WeatherCache {
 	}
 
 	/**
-	 * Gets the weekly forecast. This is a map of date to forecast.
-	 * The Map is ordered by date, and each list is ordered by time.
+	 * Gets the 5 day forecast.
+	 * Each element in the list is the forecast for one day.
+	 * Each day is a list of record with forecast every 3 hours.
+	 * Every record has a time stamp, and the lists are sorted chronologically.
 	 *
-	 * @return			the forecast for each day of the week
+	 * @return	the forecast for each day of the week
 	 */
 	public List<List<Record>> getThisWeek() throws APIException, CacheException {
 		if (! isFresh())
@@ -190,11 +206,10 @@ public class WeatherCache {
 	/**
 	 * Gets the forecast for today. Each record gives weather data for a
 	 * particular time, as well as a time stamp.
-	 * The list is ordered.
-	 * Watch out for daily forecast not referring to today, if the cache is out
-	 * of date (check time stamps).
+	 * Records are 3 hours apart.
+	 * The list is ordered chronolgically.
 	 *
-	 * @return			daily weather forecast
+	 * @return	daily weather forecast
 	 */
 	public List<Record> getToday() throws APIException, CacheException {
 		if (! isFresh())
@@ -206,7 +221,7 @@ public class WeatherCache {
 	/**
 	 * Gets any weather warnings.
 	 *
-	 * @return			list of warnings
+	 * @return	list of warnings
 	 */
 	public List<Warning> getWarnings() throws APIException, CacheException {
 		if (! isFresh())
@@ -366,16 +381,7 @@ public class WeatherCache {
 		return i;
 	}
 
-	/**
-	 * Accesses the API and updates the cache. The latest weather forecast is
-	 * downloaded. If no exception is thrown, the latest data can be accessed
-	 * through getters. The latest forecast is also saved to file, so that it
-	 * can be loaded if the app is restarted.
-	 *
-	 * @throws	APIException	if downloading weather forecast fails
-	 * @throws	CacheException	if saving to disk fails
-	 */
-	public void refresh() throws APIException, CacheException {
+	private void refresh() throws APIException, CacheException {
 		// API call
 
 		WeatherData data;
@@ -542,11 +548,10 @@ public class WeatherCache {
 	}
 
 	/**
-	 * Updates the location and saves to disk.
-	 * Note that this is only a string, and not currently validated.
-	 * We should look at validating it with the API.
+	 * Updates the location and fetches weather data for that location.
 	 *
-	 * @param	l				location string
+	 * @param	l				location string, in the form "[city name], [ISO 3166 country code]"
+	 * @throws	APIException	if downloading weather data fails
 	 * @throws	CacheException	if saving to disk fails
 	 */
 	public void setLocation(String l) throws APIException, CacheException {

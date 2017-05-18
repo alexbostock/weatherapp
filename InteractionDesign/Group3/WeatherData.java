@@ -2,6 +2,9 @@ package InteractionDesign.Group3;
 
 import com.google.gson.JsonObject;
 
+/**
+ * Represents the data returned by an API request
+ */
 public class WeatherData {
 	
 	public static enum ConditionCode {
@@ -58,12 +61,10 @@ public class WeatherData {
 
 		private int id;
 		
-		//generates the condition code according to the weatherid provided
 		private ConditionCode (int id) {
 			this.id = id;
 		}
 		
-		//gets the condition code associated with the integer id
 		public static ConditionCode valueof (int id) {
 			for (ConditionCode condition : ConditionCode.values()) {
 				if (condition.id == id)
@@ -72,33 +73,36 @@ public class WeatherData {
 			return ConditionCode.UNKNOWN;
 		}
 
-		//returns this condition codes integer id
 		public int getId () {
 			return this.id;
 		}
 	}
 	
-	//enum representing the overall condition of the weather
+	// Enum representing the overall condition of the weather
 	private final ConditionCode mCode;
-	//a description of the weather i.e. the text in the condition code
+	// A description of the weather i.e. the text in the condition code
 	private final String mDescription;
 	
-	//temperature in celcius
+	// Temperature in celcius
 	private final double mTemp;
-	//atmospheric pressure in hPa (hectopascals)
+	// Atmospheric pressure in hPa (hectopascals)
 	private final double mPressure;
-	//humidity as a %
+	// Humidity as a %
 	private final double mHumidity;
 	
-	//wind speed in m/s
+	// Wind speed in m/s
 	private final double mWindSpeed;
 	
-	//sunrise time in unix UTC
+	// Sunrise time in unix UTC
 	private final int mSunrise;
-	//sunset time in unic UTC
+	// Sunset time in unic UTC
 	private final int mSunset;
 	
-	//gathers data from JSON document to fill fields
+	/**
+	 * Constructs a WeatherData object from a json object
+	 *
+	 * @param	json	the json data from an API call
+	 */
 	public WeatherData(JsonObject json) {
 		JsonObject jsonWeather = json.getAsJsonArray("weather").get(0).getAsJsonObject();
 		mCode = ConditionCode.valueof(jsonWeather.get("id").getAsInt());
@@ -124,42 +128,75 @@ public class WeatherData {
 		}
 	}
 	
-	//returns the condition code
+	/**
+	 * Gets the condition code from the API. eg. DRIZZLE, SNOW, MIST etc.
+	 *
+	 * @return	condition code
+	 */
 	public ConditionCode getConditionCode() {
 		return mCode;
 	}
 	
-	//returns the description...
+	/**
+	 * Gets a description of the weather.
+	 * This is basically a string version of the condition code
+	 *
+	 * @return	weather description
+	 */
 	public String getDescription() {
 		return mDescription;
 	}
 	
-	//...fairly self explanatory
+	/**
+	 * Gets the temperature, in degrees Celcius.
+	 *
+	 * @return	temperature
+	 */
 	public double getTemperature() {
 		return mTemp;
 	}
 	
-	//..etc..
+	/**
+	 * Gets the atmospheric pressure in hectoPascals
+	 *
+	 * @return	atmospheric pressure
+	 */
 	public double getPressure() {
 		return mPressure;
 	}
 	
-	//comment these
+	/**
+	 * Gets the humidity as a perentage
+	 *
+	 * @return	humidity
+	 */
 	public double getHumidity() {
 		return mHumidity;
 	}
 	
-	//if you
+	/**
+	 * Gets the wind speed in metres/second
+	 *
+	 * @return	wind speed
+	 */
 	public double getWindSpeed() {
 		return mWindSpeed;
 	}
 	
-	//want to
+	/**
+	 * Gets the sunrise time, as a unix time stamp
+	 *
+	 * @return	sunrise time
+	 */
 	public int getSunrise() {
 		return mSunrise;
 	}
 	
-	//...
+	/**
+	 * Gets the sunset time, as a unix time stamp
+	 *
+	 * @return	sunset time
+	 */
 	public int getSunset() {
 		return mSunset;
 	}

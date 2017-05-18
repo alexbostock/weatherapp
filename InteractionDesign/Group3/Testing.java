@@ -3,13 +3,14 @@ package InteractionDesign.Group3;
 import java.io.IOException;
 import java.time.LocalTime;
 
+/**
+ * A class used for testing purposes only
+ */
 public class Testing {
 	public static void main(String[] args) throws APIException, CacheException, IOException {
 		WeatherCache cache = WeatherCache.getCache();
 
-		cache.setLocation("London, GB");
-
-		cache.refresh();
+		// cache.setLocation("London, GB");
 
 		LocalTime t1 = LocalTime.now();
 		LocalTime t2 = t1.plusHours(4);
