@@ -121,7 +121,8 @@ public class WeatherCache {
 
 		rain = rain || heavyRain || snow;
 
-		boolean dark = (start.compareTo(mSunrise.toLocalTime()) < 0 || fin.plusHours(1).compareTo(mSunset.toLocalTime()) > 0);
+		boolean dark = (start.compareTo(mSunrise.toLocalTime()) < 0
+						|| fin.plusHours(1).compareTo(mSunset.toLocalTime()) > 0);
 
 		List<Item> result = new ArrayList<>();
 
@@ -401,7 +402,7 @@ public class WeatherCache {
 		LocalDateTime time = LocalDateTime.now();
 
 		Icon i = mapIcon(data.getConditionCode(), time);
-		int temp = (int) data.getTemperature();
+		int temp = (int) Math.round(data.getTemperature());
 
 		mSummary = new Record(i, temp, time);
 		mSummary.setLabel("Current");
@@ -430,7 +431,7 @@ public class WeatherCache {
 			time = t;
 
 			i = mapIcon(wf.getConditionCode(), time);
-			temp = (int) data.getTemperature();
+			temp = (int) Math.round(wf.getTemperature());
 
 			Record r = new Record(i, temp, time);
 
