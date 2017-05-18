@@ -188,7 +188,7 @@ public class WeatherCache {
 	 * Returns null if the input is less than 3 characters.
 	 * The value returned is of the form [city name], [ISO 3166 country code]
 	 *
-	 * @param	start	the beginning of a city name
+	 * @param	s	the beginning of a city name
 	 * @return	a list of cities matching the request
 	 */
 	public List<String> getSearchSuggestions(String s) {
