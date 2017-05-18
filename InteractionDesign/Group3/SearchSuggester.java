@@ -84,12 +84,4 @@ public class SearchSuggester {
 
 		return result;
 	}
-
-	public static void main(String[] args) throws IOException {
-		SearchSuggester s = new SearchSuggester("data/current.city.list.min.json");
-
-		System.out.println(s.getSuggestions("Cam"));
-		System.out.println("");
-		System.out.println(s.getSuggestions("Camb"));
-	}
 }
