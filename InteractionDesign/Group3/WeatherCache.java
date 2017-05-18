@@ -3,6 +3,7 @@ package InteractionDesign.Group3;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -63,17 +64,17 @@ public class WeatherCache {
 	}
 
 	private WeatherCache() throws APIException, CacheException {
+		// Default values
+
+		mCacheFile = "data/weatherCache.csv";
+		mCityListFile = "data/current.city.list.min.json";
+
+		mLocation = "Cambridge, GB";
+
+		makeIconMap();
+
 		try {
 			mGordon = new APIClient(mCityListFile);
-
-			makeIconMap();
-
-			// Default values
-
-			mCacheFile = "data/weatherCache.csv";
-			mCityListFile = "data/current.city.list.min.json";
-
-			mLocation = "Cambridge, GB";
 
 			loadFromDisk();
 
