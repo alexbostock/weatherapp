@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +24,7 @@ public class SearchSuggester {
 	public SearchSuggester(String file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 
-		// 22635 is the number of cities
-		List<String> strings = new ArrayList<>(22635);
+		List<String> strings = new LinkedList<>();
 
 		String line;
 		while ((line = br.readLine()) != null) {
@@ -41,7 +40,7 @@ public class SearchSuggester {
 			mSuggestionMap.put(c, subMap);
 
 			for (char d = 'a'; d <= 'z'; d++) {
-				subMap.put(d, new ArrayList<>(50));
+				subMap.put(d, new LinkedList<>());
 			}
 		}
 
@@ -74,7 +73,7 @@ public class SearchSuggester {
 		Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(start.charAt(0)));
 		List<String> poss = subMap.get(Character.toLowerCase(start.charAt(1)));
 
-		List<String> result = new ArrayList<>();
+		List<String> result = new LinkedList<>();
 
 		for (String s : poss){
 			if (s.toLowerCase().startsWith(start.toLowerCase())) {
