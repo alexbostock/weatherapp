@@ -94,15 +94,15 @@ public class APIClient {
 	// Queries the API for weather data corresponding to the URL argument
 	// Returns a JsonObject that holds the weather data
 	private JsonObject query(String subURL) throws IOException {
-	    BufferedReader reader = null;
-	    try {
-	    	JsonParser parser = new JsonParser();
-	        URL url = new URL(baseURL + subURL + APPID);
-	        reader = new BufferedReader(new InputStreamReader(url.openStream()));
-	        return parser.parse(reader).getAsJsonObject();
-	    } finally {
-	        if (reader != null)
-	            reader.close();
-	    }
+		BufferedReader reader = null;
+		try {
+			JsonParser parser = new JsonParser();
+			URL url = new URL(baseURL + subURL + APPID);
+			reader = new BufferedReader(new InputStreamReader(url.openStream()));
+			return parser.parse(reader).getAsJsonObject();
+		} finally {
+			if (reader != null)
+				reader.close();
+		}
 	}
 }
