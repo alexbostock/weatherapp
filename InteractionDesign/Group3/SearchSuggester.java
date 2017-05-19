@@ -46,11 +46,18 @@ public class SearchSuggester {
 
 		for (String s : strings) {
 			if (s.length() > 2) {
-				try {
-					Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(s.charAt(0)));
-					subMap.get(Character.toLowerCase(s.charAt(1))).add(s);
-				} catch (NullPointerException e) {
-					// Cities with non-ASCII characters will be quietly skipped
+				Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(s.charAt(0)));
+
+				// Cities with non-ASCII characters will be quietly skipped
+
+				if (subMap == null) {
+					continue;
+				}
+
+				List<String> list = subMap.get(Character.toLowerCase(s.charAt(1)));
+
+				if (list != null) {
+					list.add(s);
 				}
 			}
 		}
