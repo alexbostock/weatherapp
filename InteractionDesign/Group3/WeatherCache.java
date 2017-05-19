@@ -89,6 +89,9 @@ public class WeatherCache {
 			mSearchSug = new SearchSuggester(mCityListFile);
 
 		} catch (IOException e) {
+			// Note that this state should never occur in usage
+			// It means the install is invalid
+
 			System.out.println("Fatal error");
 			System.out.println("City list file not present");
 			System.out.println("File must be present at data/cityList.text");
@@ -278,68 +281,68 @@ public class WeatherCache {
 	private void loadFromDisk() throws CacheException {
 		File f = new File(mCacheFile);
 
-		if (! f.isFile()) {
-			System.out.println("No cache file present");
-			return;
-		}
+		if (f.isFile()) {
+			try (BufferedReader br = new BufferedReader(new FileReader(mCacheFile))) {
 
-		try (BufferedReader br = new BufferedReader(new FileReader(mCacheFile))) {
+				// Load time stamp
 
-			// Load time stamp
+				String line = br.readLine();
+				mLastUpdated = LocalDateTime.parse(line);
 
-			String line = br.readLine();
-			mLastUpdated = LocalDateTime.parse(line);
+				line = br.readLine();
+				mLocation = line;
 
-			line = br.readLine();
-			mLocation = line;
+				// Load sunrise & sunset
 
-			// Load sunrise & sunset
+				line = br.readLine();
+				mSunrise = LocalDateTime.parse(line);
 
-			line = br.readLine();
-			mSunrise = LocalDateTime.parse(line);
+				line = br.readLine();
+				mSunset = LocalDateTime.parse(line);
 
-			line = br.readLine();
-			mSunset = LocalDateTime.parse(line);
+				br.readLine();	// Should be a blank line
 
-			br.readLine();	// Should be a blank line
+				// Load weekly forecast
 
-			// Load weekly forecast
+				mThisWeek = new ArrayList<>();
 
-			mThisWeek = new ArrayList<>();
+				List<Record> list = new ArrayList<>();
 
-			List<Record> list = new ArrayList<>();
+				while (! (line = br.readLine()).equals("")) {
+					if (line.equals("___")) {
+						mThisWeek.add(list);
+						list = new ArrayList<>();
 
-			while (! (line = br.readLine()).equals("")) {
-				if (line.equals("___")) {
-					mThisWeek.add(list);
-					list = new ArrayList<>();
-
-				} else {
-					list.add(new Record(line));
+					} else {
+						list.add(new Record(line));
+					}
 				}
+
+				// Load daily summary
+
+				line = br.readLine();
+				mSummary = new Record(line);
+
+				br.readLine();
+
+				// Load weather warnings
+
+				mWarnings = new ArrayList<>();
+
+				while ((line = br.readLine()) != null) {
+					if (! line.equals(""))
+						mWarnings.add(Warning.valueOf(line));
+				}
+
+			} catch (DateTimeParseException e) {
+				throw new CacheException("Invalid cache file");
+
+			} catch (IOException e) {
+				throw new CacheException("Failed to load cache file");
 			}
-
-			// Load daily summary
-
-			line = br.readLine();
-			mSummary = new Record(line);
-
-			br.readLine();
-
-			// Load weather warnings
-
-			mWarnings = new ArrayList<>();
-
-			while ((line = br.readLine()) != null) {
-				if (! line.equals(""))
-					mWarnings.add(Warning.valueOf(line));
-			}
-
-		} catch (DateTimeParseException e) {
-			throw new CacheException("Invalid cache file");
-
-		} catch (IOException e) {
-			throw new CacheException("Failed to load cache file");
+			
+		} else {
+			System.out.println("No cache file present");
 		}
 	}
 
