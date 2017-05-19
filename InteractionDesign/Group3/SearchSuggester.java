@@ -59,25 +59,23 @@ public class SearchSuggester {
 	/**
 	 * Recommends cities given the start of a city name.
 	 * The input is case-insensitive.
-	 * Returns null if the input is less than 3 characters.
+	 * Returns empty list if the string given is less than 3 characters
 	 * The value returned is of the form [city name], [ISO 3166 country code]
 	 *
 	 * @param	start	the beginning of a city name
 	 * @return	a list of cities matching the request
 	 */
 	public List<String> getSuggestions(String start) {
-		if (start.length() < 3) {
-			return null;
-		}
-
-		Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(start.charAt(0)));
-		List<String> poss = subMap.get(Character.toLowerCase(start.charAt(1)));
-
 		List<String> result = new LinkedList<>();
 
-		for (String s : poss){
-			if (s.toLowerCase().startsWith(start.toLowerCase())) {
-				result.add(s);
+		if (start.length() >= 3) {
+			Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(start.charAt(0)));
+			List<String> poss = subMap.get(Character.toLowerCase(start.charAt(1)));
+
+			for (String s : poss){
+				if (s.toLowerCase().startsWith(start.toLowerCase())) {
+					result.add(s);
+				}
 			}
 		}
 
