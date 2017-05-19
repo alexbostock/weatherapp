@@ -8,6 +8,7 @@
 		All class files are included alongside the source code, so you don't need to compile anything.
 
 		// TODO - What Java version?
+		// TODO - Where to download Java
 
 		# On Mac OS X / Linux / Other Unix-Based #
 

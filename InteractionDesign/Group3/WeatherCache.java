@@ -104,6 +104,15 @@ public class WeatherCache {
 		System.out.println("WeatherCache instantiated in " + (t3 - t1) / 1000000 + "ms (including the above)");
 	}
 
+	private List<Record> get24HourIsh() {
+		List<Record> result = new ArrayList<>();
+
+		result.addAll(mThisWeek.get(0));
+		result.addAll(mThisWeek.get(1));
+
+		return result;
+	}
+
 	/**
 	 * Gets a list of recommended items based on two time stamps and the daily
 	 * forecast.
@@ -121,34 +130,35 @@ public class WeatherCache {
 		if (mThisWeek == null)
 			throw new CacheException("Recommending items failed");
 
-		boolean rain = false;
 		boolean cold = false;
-		boolean sunny = false;
+		boolean dark = false;
 		boolean heavyRain = false;
+		boolean rain = false;
 		boolean snow = false;
+		boolean sunny = false;
 
-		for (Record r : getToday()) {
+		for (Record r : get24HourIsh()) {
 			LocalTime t = r.getTimeStamp().toLocalTime();
 
 			if (t.compareTo(start) > 0 || t.compareTo(fin.plusHours(1)) < 0) {
 				Icon i = r.getIcon();
 
-				heavyRain = heavyRain || (i == Icon.HEAVY_RAIN || i == Icon.HAIL || i == Icon.THUNDERSTORM);
+				cold = cold || (r.getTemp() < 10);
 
-				snow = snow || (i == Icon.HEAVY_SNOW || i == Icon.LIGHT_SNOW || i == Icon.SNOWFLAKE);
+				dark = dark || (t.compareTo(mSunrise.toLocalTime()) < 0
+							|| t.plusHours(1).compareTo(mSunset.toLocalTime()) > 0);
+
+				heavyRain = heavyRain || (i == Icon.HEAVY_RAIN || i == Icon.HAIL || i == Icon.THUNDERSTORM);
 
 				rain = rain || (i == Icon.LIGHT_RAIN);
 
-				sunny = sunny || (i == Icon.SUN);
+				snow = snow || (i == Icon.HEAVY_SNOW || i == Icon.LIGHT_SNOW || i == Icon.SNOWFLAKE);
 
-				cold = cold || (r.getTemp() < 10);
+				sunny = sunny || (i == Icon.SUN);
 			}
 		}
 
 		rain = rain || heavyRain || snow;
-
-		boolean dark = (start.compareTo(mSunrise.toLocalTime()) < 0
-						|| fin.plusHours(1).compareTo(mSunset.toLocalTime()) > 0);
 
 		List<Item> result = new ArrayList<>();
 
