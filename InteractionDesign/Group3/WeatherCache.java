@@ -104,14 +104,21 @@ public class WeatherCache {
 		System.out.println("WeatherCache instantiated in " + (t3 - t1) / 1000000 + "ms (including the above)");
 	}
 
-	private List<Record> get24HourIsh() {
+	private List<Record> get24Hours() {
 		// Gets today's and tomorrow's weather
 		// At least 24 hours in the future, rather than until midnight
 
 		List<Record> result = new ArrayList<>();
 
 		result.addAll(mThisWeek.get(0));
-		result.addAll(mThisWeek.get(1));
+
+		for (Record r : mThisWeek.get(1)) {
+			if (result.size() < 8) {
+				result.add(r);
+			} else {
+				break;
+			}
+		}
 
 		return result;
 	}
@@ -140,7 +147,7 @@ public class WeatherCache {
 		boolean snow = false;
 		boolean sunny = false;
 
-		for (Record r : get24HourIsh()) {
+		for (Record r : get24Hours()) {
 			LocalTime t = r.getTimeStamp().toLocalTime();
 
 			if (t.compareTo(start) > 0 || t.compareTo(fin.plusHours(1)) < 0) {
@@ -519,7 +526,7 @@ public class WeatherCache {
 		boolean vis = false;
 		boolean storm = false;
 
-		for (Record r : get24HourIsh()) {
+		for (Record r : get24Hours()) {
 			ice = ice || (r.getTemp() < 3);
 
 			i = r.getIcon();
