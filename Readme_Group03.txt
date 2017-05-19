@@ -3,7 +3,9 @@
 
 	## Running the App ##
 
-		The app runs on any operating system with Java installed
+		The app runs on any operating system with Java installed.
+
+		All class files are included alongside the source code, so you don't need to compile anything.
 
 		// TODO - What Java version?
 
@@ -28,3 +30,8 @@
 		* The list of cities in data/cityList.txt is a modified version of a JSON file from openweathermap
 			Original file: city.list.min.json
 				http://bulk.openweathermap.org/sample/
+
+	## Documentation ##
+
+		The app is documented in javadoc, giving details of each class and method.
+			https://alexbostock.github.io/weatherapp/
