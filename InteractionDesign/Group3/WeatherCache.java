@@ -105,6 +105,9 @@ public class WeatherCache {
 	}
 
 	private List<Record> get24HourIsh() {
+		// Gets today's and tomorrow's weather
+		// At least 24 hours in the future, rather than until midnight
+
 		List<Record> result = new ArrayList<>();
 
 		result.addAll(mThisWeek.get(0));
@@ -516,8 +519,8 @@ public class WeatherCache {
 		boolean vis = false;
 		boolean storm = false;
 
-		for (Record r : getToday()) {
-			ice = ice || (r.getTemp() < 5);
+		for (Record r : get24HourIsh()) {
+			ice = ice || (r.getTemp() < 3);
 
 			i = r.getIcon();
 
