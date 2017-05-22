@@ -103,23 +103,10 @@ public class WeatherCache {
 		System.out.println("SearchSuggester instantiated in " + (t3 - t2) / 1000000 + "ms");
 		System.out.println("WeatherCache instantiated in " + (t3 - t1) / 1000000 + "ms (including the above)");
 	}
-	
-	/**
-	 * Gets weather forecast for the next 24 hours.
-	 * Preferred over 'today', so we can see further ahead in the evening.
-	 * Data returned are always fresh (no more than 1 hour old)
-	 *
-	 * @return	weather forecast for the next 24 hours
-	 * @throws	APIException if fetching from the API fails
-	 * @throws	CacheException if loading from disk fails
-	 */
-	public List<Record> get24Hours() throws APIException, CacheException {
+
+	private List<Record> get24Hours() {
 		// Gets today's and tomorrow's weather
 		// At least 24 hours in the future, rather than until midnight
-
-		if (! isFresh()) {
-			refresh();
-		}
 
 		List<Record> result = new ArrayList<>();
 
@@ -628,7 +615,7 @@ public class WeatherCache {
 	/**
 	 * Updates the location and fetches weather data for that location.
 	 *
-	 * @param	l		location string, in the form "[city name], [ISO 3166 country code]"
+	 * @param	l				location string, in the form "[city name], [ISO 3166 country code]"
 	 * @throws	APIException	if downloading weather data fails
 	 * @throws	CacheException	if saving to disk fails
 	 */

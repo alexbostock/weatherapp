@@ -1,0 +1,8 @@
+package InteractionDesign.Group3;
+
+/**
+ * Represents a weather icon.
+ */
+public enum Icon {
+	HAIL, HEAVY_CLOUDS, HEAVY_RAIN, HEAVY_SNOW, LIGHT_CLOUDS, LIGHT_RAIN, LIGHT_SNOW, MIST, MIST_DAY, MIST_NIGHT, MOON, PARTLY_CLEAR_DAY, PARTLY_CLEAR_NIGHT, SNOWFLAKE, SUN, THUNDERSTORM, WIND;
+}

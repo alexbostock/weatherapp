@@ -19,7 +19,7 @@ public class SearchSuggester {
 	 * Constructs search suggestion engine for a list of cities.
 	 *
 	 * @param	file	text file containing a list of cities
-	 * @throws	IOException	if the file cannot be loaded
+	 * @throws IOException	if the file cannot be loaded
 	 */
 	public SearchSuggester(String file) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file));

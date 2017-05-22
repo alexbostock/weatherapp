@@ -30,7 +30,7 @@ public class APIClient {
 	 * Gets the current weather data at a particular city, from the city name.
 	 *
 	 * @param	location	the name of a city, and its ISO 3166 country code, separated by a comma eg. "London, GB"
-	 * @return	details of the current weather in that location
+	 * @return		details of the current weather in that location
 	 * @throws	IOException	if the API request fails
 	 */
 	public WeatherData currentWeatherAtCity (String location) throws IOException {
@@ -44,7 +44,7 @@ public class APIClient {
 	 * City IDs are defined by openweather map. They are listed at http://openweathermap.org/help/city_list.txt
 	 *
 	 * @param	cityID	the city ID
-	 * @return	details of the current weather in that location
+	 * @return		details of the current weather in that location
 	 * @throws	IOException	if the API request fails
 	 */
 	public WeatherData currentWeatherAtCity (int cityID) throws IOException {
@@ -58,7 +58,7 @@ public class APIClient {
 	 * City IDs are defined by openweather map. They are listed at http://openweathermap.org/help/city_list.txt
 	 *
 	 * @param	location	the name of a city, and its ISO 3166 country code, separated by a comma eg. "London, GB"
-	 * @return	details of the weather forecast in that location
+	 * @return		details of the weather forecast in that location
 	 * @throws	IOException	if the API request fails
 	 */
 	public List<WeatherForecast> forecastWeatherAtCity (String location) throws IOException {
@@ -77,7 +77,7 @@ public class APIClient {
 	 * City IDs are defined by openweather map. They are listed at http://openweathermap.org/help/city_list.txt
 	 *
 	 * @param	cityID	the city ID
-	 * @return	details of the weather forecast in that location
+	 * @return		details of the weather forecast in that location
 	 * @throws	IOException	if the API request fails
 	 */
 	public List<WeatherForecast> forecastWeatherAtCity (int cityID) throws IOException {
