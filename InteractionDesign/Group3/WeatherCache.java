@@ -230,7 +230,7 @@ public class WeatherCache {
 	/**
 	 * Recommends cities given the start of a city name.
 	 * The input is case-insensitive.
-	 * Returns null if the input is less than 3 characters.
+	 * Returns empty list if input is less than 3 characters (or if no matches are found)
 	 * The value returned is of the form [city name], [ISO 3166 country code]
 	 *
 	 * @param	s	the beginning of a city name
