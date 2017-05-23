@@ -536,6 +536,7 @@ public class WeatherCache {
 		mWarnings = new ArrayList<>();
 
 		boolean ice = false;
+		boolean wet = false;
 		boolean vis = false;
 		boolean storm = false;
 
@@ -547,6 +548,8 @@ public class WeatherCache {
 			vis = vis || (i == Icon.MIST || i == Icon.MIST_DAY || i == Icon.MIST_NIGHT);
 
 			storm = storm || (i == Icon.THUNDERSTORM);
+		
+			wet = wet || (i == Icon.HAIL) || (i == Icon.HEAVY_RAIN) || (i == Icon.HEAVY_SNOW) || (i == Icon.LIGHT_SNOW) || (i == Icon.SNOWFLAKE) || (i == Icon.THUNDERSTORM); 
 		}
 
 		if (ice)
@@ -557,6 +560,9 @@ public class WeatherCache {
 
 		if (storm)
 			mWarnings.add(Warning.STORMY);
+
+		if (wet)
+			mWarnings.add(Warning.WET_SURFACES);
 
 		saveToDisk();
 
