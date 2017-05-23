@@ -163,7 +163,7 @@ public class WeatherCache {
 		for (Record r : get24Hours()) {
 			LocalTime t = r.getTimeStamp().toLocalTime();
 
-			if (t.compareTo(start) > 0 || t.compareTo(fin.plusHours(1)) < 0) {
+			if (t.compareTo(start) > 0 & t.compareTo(fin.plusHours(1)) < 0) {
 				Icon i = r.getIcon();
 
 				cold = cold || (r.getTemp() < 10);
