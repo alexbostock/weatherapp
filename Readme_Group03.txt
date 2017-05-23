@@ -3,22 +3,9 @@
 
 	## Running the App ##
 
-		The app runs on any operating system with Java installed.
+		The app runs on any operating system with Java 8 installed.
 
-		All class files are included alongside the source code, so you don't need to compile anything.
-
-		// TODO - What Java version?
-		// TODO - Where to download Java
-
-		# On Mac OS X / Linux / Other Unix-Based #
-
-			Run the script 'run.sh' (by clicking on it)
-
-			Alternatively, using the terminal, navigate to this directory and run 'sh run.sh'
-
-		# On Windows #
-
-			Run the 'run.bat' (by clicking on it)
+		To start the app, simply click on 'app.jar'.
 
 	## Acknowledgements ##
 
