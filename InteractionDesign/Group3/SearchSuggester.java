@@ -76,8 +76,8 @@ public class SearchSuggester {
 		List<String> result = new LinkedList<>();
 
 		if (start.length() >= 3) {
-			Map<Character, List<String>> subMap = mSuggestionMap.get(Character.toLowerCase(start.charAt(0)));
-			List<String> poss = subMap.get(Character.toLowerCase(start.charAt(1)));
+			Map<Character, List<String>> subMap = mSuggestionMap.getOrDefault(Character.toLowerCase(start.charAt(0)), new HashMap<>());
+			List<String> poss = subMap.getOrDefault(Character.toLowerCase(start.charAt(1)), new LinkedList<>());
 
 			for (String s : poss){
 				if (s.toLowerCase().startsWith(start.toLowerCase())) {
