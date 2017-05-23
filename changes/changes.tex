@@ -1,0 +1,48 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fullpage}
+\usepackage{fancyhdr} %headers
+\usepackage{titlesec}
+\usepackage{graphicx} %images
+\usepackage{amsmath} %maths
+\usepackage{amssymb} %maths symbols
+\usepackage{subfig}
+\usepackage[section]{placeins}
+\usepackage{listings}
+\renewcommand{\headrulewidth}{0pt}
+
+\nonstopmode
+
+%\titleformat{name=\section}
+%  {\normalfont\scshape}{\thesection}{1em}{\large}
+
+\titleformat{name=\section}
+  {\normalfont\large\scshape}{\thesection}{1em}{}
+
+\titleformat{name=\subsection}
+    {\normalfont\normalsize}{\thesubsection}{1em}{\large}
+
+%%\titleformat{\subsubsection}
+%  {\normalfont\normalsize}{\thesubsubsection}{1em}{}
+
+
+\pagestyle{fancy}
+\setlength{\headsep}{0.2in}
+\title{Deviations from the Design}
+\author{Group 3}
+
+\date{}
+\fancyhf{}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{itemize}
+	\item
+	On the main screen, we have changed daily forecast for 24 hour forecast. This means that checking the app in the evening will show weather for the next morning, rather than just until midnight.
+
+	\item
+	In the list of recommended items, rather than showing icons with words underneath, we are just showing icons. This is for aesthetic reasons - the spacing is more consistent without text, and it is less likely that scrolling is necessary. The icons are clear, so this change doesn't have a significant effect on usability. 
+\end{itemize}
+
+\end{document}

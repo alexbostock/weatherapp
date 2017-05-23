@@ -13,7 +13,7 @@ public class Tester {
 		WeatherCache cache = WeatherCache.getCache();
 
 		// Trigger a refresh (API call)
-		cache.setLocation("London borough of harrow, GB");
+		cache.setLocation("Cambridge, GB");
 
 		LocalTime t1 = LocalTime.now();
 		LocalTime t2 = t1.plusHours(4);

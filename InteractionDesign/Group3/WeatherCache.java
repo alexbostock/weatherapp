@@ -50,7 +50,7 @@ public class WeatherCache {
 	private LocalDateTime mSunset;
 
 	/**
-	 * Returns the singleton instance of WeatherData.
+	 * Returns the singleton instance of WeatherCache.
 	 * After this call, the cache will have up to date weather data, unless an exception is thrown.
 	 *
 	 * @return	the singleton
