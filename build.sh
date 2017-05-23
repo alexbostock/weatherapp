@@ -3,7 +3,9 @@
 
 mkdir weatherapp
 
-cp *.pdf weatherapp
+# TODO - make jar
+
+cp changes/changes.pdf weatherapp
 cp -r com weatherapp
 mkdir weatherapp/data
 cp data/cityList.txt weatherapp

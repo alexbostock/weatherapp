@@ -19,6 +19,8 @@
 			Original file: city.list.min.json
 				http://bulk.openweathermap.org/sample/
 
+		* All icons used are creative commons licensed, from various sources
+
 	## Documentation ##
 
 		The app is documented in javadoc, giving details of each class and method.
