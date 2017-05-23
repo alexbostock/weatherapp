@@ -522,7 +522,10 @@ public class WeatherCache {
 				case 2: r.setLabel("Tomorrow");
 				break;
 
-				default: r.setLabel(time.getDayOfWeek().toString());
+				default:
+					String label = time.getDayOfWeek().toString();
+					label = label.substring(0, 1) + label.substring(1).toLowerCase();
+					r.setLabel(label);
 			}
 
 			current.add(r);
